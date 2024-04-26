@@ -13,7 +13,6 @@ return new class extends Migration
     {
         // Tabla Barberos
         Schema::create('barbers', function (Blueprint $table) {
-            $table->primary('id');
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->string('bio')->nullable();
             $table->string('experience')->nullable();
@@ -24,7 +23,7 @@ return new class extends Migration
             
             $table->foreign('barbershop_id')
                 ->references('id')
-                ->on('barbershop')
+                ->on('barbershops')
                 ->onDelete('set null')
                 ->onUpdate('cascade');
         });
@@ -35,6 +34,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        //
+        Schema::dropIfExists('barbers');
     }
 };

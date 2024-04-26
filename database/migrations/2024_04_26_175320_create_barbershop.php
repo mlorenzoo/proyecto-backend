@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('name')->unique();
             $table->string('ubication')->unique();
             $table->unsignedBigInteger('gestor_id')->nullable(); // Cambiado de 'idgestor' a 'gestor_id'
-            $table->string('barber');
+            $table->unsignedBigInteger('barber_id')->nullable();
             $table->timestamps();
 
             $table->foreign('gestor_id')
@@ -28,6 +28,20 @@ return new class extends Migration
             })
             ->onDelete('set null')
             ->onUpdate('cascade');
+
+            $table->foreign('barber_id')
+                ->references('id')
+                ->on('barbers')
+                ->onDelete('set null')
+                ->onUpdate('cascade')
+                ->when(function ($query) {
+                    // Condición: solo cuando la id de barbershop sea igual a barbershop_id en la tabla barbers
+                    $query->whereExists(function ($query) {
+                        $query->selectRaw(1)
+                            ->from('barbers')
+                            ->whereColumn('barbers.barbershop_id', '=', 'barbershops.id');
+                    });
+                });
         });
     }
 
