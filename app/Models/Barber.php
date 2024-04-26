@@ -15,7 +15,7 @@ class Barber extends Model
      * @var array<int, string>
      */
     protected $fillable = [
-        'user_id',
+        'id',
         'bio',
         'experience',
         'specialties',
@@ -27,6 +27,6 @@ class Barber extends Model
      */
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'id');
     }
 }
