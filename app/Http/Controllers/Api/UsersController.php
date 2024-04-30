@@ -32,7 +32,9 @@ class UsersController extends Controller
             'email' => 'required|email|unique:users',
             'password' => 'required|string|min:8',
             'role' => 'required|string|in:Admin,Gestor,Barbero,Cliente',
-            // Añade más reglas de validación si es necesario
+            'pfp' => 'nullable|string',
+            'address' => 'nullable|string',
+            'phone' => 'nullable|string',
         ]);
 
         // Crear un nuevo usuario
@@ -69,7 +71,9 @@ class UsersController extends Controller
             'email' => 'email|unique:users,email,' . $user->id,
             'password' => 'string|min:8',
             'role' => 'string|in:Admin,Gestor,Barbero,Cliente',
-            // Añade más reglas de validación si es necesario
+            'pfp' => 'nullable|string',
+            'address' => 'nullable|string',
+            'phone' => 'nullable|string',
         ]);
 
         // Actualizar el usuario con los datos proporcionados

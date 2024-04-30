@@ -14,7 +14,7 @@ class BarbersController extends Controller
     public function index()
     {
         // Obtener todos los barberos
-        $barbers = Barber::with('user')->get();
+        $barbers = Barber::with('user', 'barbershop')->get();
 
         // Devolver una respuesta JSON con los barberos
         return response()->json($barbers);
@@ -32,6 +32,7 @@ class BarbersController extends Controller
             'experience' => 'nullable|string',
             'specialties' => 'nullable|string',
             'pics' => 'nullable|string',
+            'barbershop_id' => 'nullable|exists:barbershops,id',
         ]);
 
         // Crear un nuevo barbero
