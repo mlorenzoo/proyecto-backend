@@ -18,7 +18,7 @@
                 $table->string('email')->unique();
                 $table->timestamp('email_verified_at')->nullable();
                 $table->string('password');
-                $table->enum('role', ['Admin', 'Gestor', 'Barbero', 'Cliente'])->required();
+                $table->enum('role', ['Admin', 'Gestor', 'Barbero', 'Cliente']);
                 $table->string('pfp')->nullable();
                 $table->string('address')->nullable();
                 $table->string('phone')->nullable();

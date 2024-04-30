@@ -15,7 +15,7 @@ class barbers extends Seeder
     {
         DB::table('barbers')->insert([
             [
-                'id' => 3,
+                'user_id' => 3,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],

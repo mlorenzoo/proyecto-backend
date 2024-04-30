@@ -18,6 +18,13 @@ return new class extends Migration
             $table->foreignId('service_id')->constrained('services')->onDelete('cascade');
             $table->timestamps();
         });
+
+        Schema::table('barbers_services', function (Blueprint $table) {
+            $table->foreign('user_id')
+                ->references('id')
+                ->on('users')
+                ->where('role', 'Barbero');
+        });
     }
 
     /**

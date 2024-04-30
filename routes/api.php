@@ -6,7 +6,7 @@ use App\Http\Controllers\Api\UsersController;
 use App\Http\Controllers\Api\SubscriptionsController;
 use App\Http\Controllers\Api\ServicesController;
 use App\Http\Controllers\Api\BarbersController;
-
+use App\Http\Controllers\Api\TokenController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -25,3 +25,12 @@ Route::apiResource('users', UsersController::class);
 Route::apiResource('subscriptions', SubscriptionsController::class);
 Route::apiResource('services', ServicesController::class);
 Route::apiResource('barbers', BarbersController::class);
+
+// TokenController
+Route::middleware('auth:sanctum')->get('/user', [TokenController::class, 'user']);
+Route::middleware('guest')->post('/register', [TokenController::class, 'register']);
+Route::middleware('guest')->post('/login', [TokenController::class, 'login']);
+Route::middleware('auth:sanctum')->post('/logout', [TokenController::class, 'logout']);
+Route::middleware('auth:sanctum')->get('/user', [TokenController::class, 'user']);
+Route::middleware('guest')->post('/register',  [TokenController::class, 'register']);
+Route::middleware('guest')->post('/login',  [TokenController::class, 'login']);
