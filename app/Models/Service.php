@@ -19,4 +19,9 @@ class Service extends Model
         'price',
         'image',
     ];
+
+    public function barbers()
+    {
+        return $this->belongsToMany(User::class, 'barbers_services', 'service_id', 'user_id');
+    }
 }

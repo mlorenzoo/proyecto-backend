@@ -20,4 +20,9 @@ class Subscription extends Model
         'description',
         'duration',
     ];
+
+    public function clients()
+    {
+        return $this->hasMany(CustomerSubscription::class);
+    }
 }

@@ -21,8 +21,21 @@ class Client extends Model
     /**
      * Get the user associated with the client.
      */
+    // Relación con el usuario cliente
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    // Relación con las suscripciones del cliente
+    public function subscriptions()
+    {
+        return $this->hasMany(CustomerSubscription::class);
+    }
+
+    // Relación con las citas del cliente
+    public function appointments()
+    {
+        return $this->hasMany(Appointment::class);
     }
 }
