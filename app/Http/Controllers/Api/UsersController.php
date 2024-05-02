@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Hash;
 
 class UsersController extends Controller
 {
@@ -37,8 +38,11 @@ class UsersController extends Controller
             'phone' => 'nullable|string',
         ]);
 
-        // Crear un nuevo usuario
-        $user = User::create($request->all());
+        // Hash de la contraseña utilizando Bcrypt
+        $password = Hash::make($request->password);
+
+        // Crear un nuevo usuario con la contraseña hasheada
+        $user = User::create(array_merge($request->all(), ['password' => $password]));
 
         // Devolver una respuesta JSON con el usuario creado
         return response()->json($user, 201);
@@ -76,8 +80,16 @@ class UsersController extends Controller
             'phone' => 'nullable|string',
         ]);
 
+        // Actualizar los datos del usuario
+        $userData = $request->all();
+
+        // Verificar si se proporcionó una nueva contraseña y hashearla
+        if (isset($userData['password'])) {
+            $userData['password'] = Hash::make($userData['password']);
+        }
+
         // Actualizar el usuario con los datos proporcionados
-        $user->update($request->all());
+        $user->update($userData);
 
         // Devolver una respuesta JSON con el usuario actualizado
         return response()->json($user);

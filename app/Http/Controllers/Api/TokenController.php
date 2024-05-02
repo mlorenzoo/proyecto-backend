@@ -18,8 +18,7 @@ class TokenController extends Controller
        
         return response()->json([
             "success" => true,
-            "user"    => $user,
-            "roles"   => [$user->role],
+            "user"    => $user
         ]);
     }
 
@@ -38,7 +37,7 @@ class TokenController extends Controller
             'surname' => $request['surname'],
             'email' => $request['email'],
             'password' => Hash::make($request['password']),
-            'role' => 'Cliente' // Asignar el rol predeterminado
+            'role' => $request->input('role', 'Cliente')
         ]);
 
         $token = $user->createToken('authToken')->plainTextToken;
