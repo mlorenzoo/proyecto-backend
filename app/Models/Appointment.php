@@ -26,6 +26,6 @@ class Appointment extends Model
     // Relación con los servicios de la cita
     public function services()
     {
-        return $this->belongsTo(Service::class, 'services_id');
+        return $this->hasMany(Service::class, 'services_id');
     }
 }
