@@ -17,8 +17,8 @@ class UsersController extends Controller
         // Obtener todos los usuarios
         $users = User::all();
 
-        // Devolver una respuesta JSON con los usuarios
-        return response()->json($users);
+        // Devolver una respuesta JSON con los usuarios y éxito true
+        return response()->json(['success' => true, 'data' => $users]);
     }
 
     /**
@@ -44,8 +44,8 @@ class UsersController extends Controller
         // Crear un nuevo usuario con la contraseña hasheada
         $user = User::create(array_merge($request->all(), ['password' => $password]));
 
-        // Devolver una respuesta JSON con el usuario creado
-        return response()->json($user, 201);
+        // Devolver una respuesta JSON con el usuario creado y éxito true
+        return response()->json(['success' => true, 'data' => $user], 201);
     }
 
     /**
@@ -56,8 +56,8 @@ class UsersController extends Controller
         // Buscar el usuario por su ID
         $user = User::findOrFail($id);
 
-        // Devolver una respuesta JSON con el usuario encontrado
-        return response()->json($user);
+        // Devolver una respuesta JSON con el usuario encontrado y éxito true
+        return response()->json(['success' => true, 'data' => $user]);
     }
 
     /**
@@ -91,8 +91,8 @@ class UsersController extends Controller
         // Actualizar el usuario con los datos proporcionados
         $user->update($userData);
 
-        // Devolver una respuesta JSON con el usuario actualizado
-        return response()->json($user);
+        // Devolver una respuesta JSON con el usuario actualizado y éxito true
+        return response()->json(['success' => true, 'data' => $user]);
     }
 
     /**
@@ -101,9 +101,10 @@ class UsersController extends Controller
     public function destroy(string $id)
     {
         // Buscar el usuario por su ID y eliminarlo
-        User::findOrFail($id)->delete();
+        $user = User::findOrFail($id);
+        $user->delete();
 
-        // Devolver una respuesta JSON indicando que el usuario fue eliminado
-        return response()->json(['message' => 'User deleted successfully']);
+        // Devolver una respuesta JSON indicando si el usuario fue eliminado con éxito
+        return response()->json(['success' => true, 'message' => 'User deleted successfully']);
     }
 }
