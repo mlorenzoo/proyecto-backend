@@ -7,11 +7,11 @@ use App\Http\Controllers\Api\SubscriptionsController;
 use App\Http\Controllers\Api\ServicesController;
 use App\Http\Controllers\Api\BarbersController;
 use App\Http\Controllers\Api\TokenController;
-use App\Htto\Controllers\Api\AppointmentController;
-use App\Htto\Controllers\Api\BarberServiceController;
-use App\Htto\Controllers\Api\CustomerSubscriptionController;
-use App\Htto\Controllers\Api\PaymentController;
-use App\Htto\Controllers\Api\BarbershopsController;
+use App\Http\Controllers\Api\AppointmentController;
+use App\Http\Controllers\Api\BarberServiceController;
+use App\Http\Controllers\Api\CustomerSubscriptionController;
+use App\Http\Controllers\Api\PaymentController;
+use App\Http\Controllers\Api\BarbershopsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -32,6 +32,7 @@ Route::apiResource('users', UsersController::class);
 Route::apiResource('subscriptions', SubscriptionsController::class);
 Route::apiResource('services', ServicesController::class);
 Route::apiResource('barbers', BarbersController::class);
+Route::apiResource('barbershops', BarbershopsController::class);
 
 // TokenController
 Route::middleware('auth:sanctum')->get('/user', [TokenController::class, 'user']);

@@ -17,7 +17,10 @@ class SubscriptionsController extends Controller
         $subscriptions = Subscription::all();
 
         // Devolver una respuesta JSON con las suscripciones
-        return response()->json($subscriptions);
+        return response()->json([
+            'success' => true,
+            'data' => $subscriptions
+        ]);
     }
 
     /**
@@ -26,7 +29,7 @@ class SubscriptionsController extends Controller
     public function store(Request $request)
     {
         // Validar los datos de la solicitud
-        $request->validate([
+        $validator = $request->validate([
             'plan' => 'required|string',
             'price' => 'required|numeric',
             'description' => 'nullable|string',
@@ -38,7 +41,10 @@ class SubscriptionsController extends Controller
         $subscription = Subscription::create($request->all());
 
         // Devolver una respuesta JSON con la suscripción creada
-        return response()->json($subscription, 201);
+        return response()->json([
+            'success' => true,
+            'data' => $subscription
+        ], 201);
     }
 
     /**
@@ -50,7 +56,10 @@ class SubscriptionsController extends Controller
         $subscription = Subscription::findOrFail($id);
 
         // Devolver una respuesta JSON con la suscripción encontrada
-        return response()->json($subscription);
+        return response()->json([
+            'success' => true,
+            'data' => $subscription
+        ]);
     }
 
     /**
@@ -62,7 +71,7 @@ class SubscriptionsController extends Controller
         $subscription = Subscription::findOrFail($id);
 
         // Validar los datos de la solicitud
-        $request->validate([
+        $validator = $request->validate([
             'plan' => 'string',
             'price' => 'numeric',
             'description' => 'nullable|string',
@@ -74,7 +83,10 @@ class SubscriptionsController extends Controller
         $subscription->update($request->all());
 
         // Devolver una respuesta JSON con la suscripción actualizada
-        return response()->json($subscription);
+        return response()->json([
+            'success' => true,
+            'data' => $subscription
+        ]);
     }
 
     /**
@@ -86,6 +98,9 @@ class SubscriptionsController extends Controller
         Subscription::findOrFail($id)->delete();
 
         // Devolver una respuesta JSON indicando que la suscripción fue eliminada
-        return response()->json(['message' => 'Subscription deleted successfully']);
+        return response()->json([
+            'success' => true,
+            'message' => 'Subscription deleted successfully'
+        ]);
     }
 }
