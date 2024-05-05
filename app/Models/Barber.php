@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Barbershop;
 
-
 class Barber extends Model
 {
     use HasFactory;
@@ -22,6 +21,7 @@ class Barber extends Model
         'experience',
         'specialties',
         'pics',
+        'barbershop_id', // Agregar la columna barbershop_id
     ];
 
     /**
