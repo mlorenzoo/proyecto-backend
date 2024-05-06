@@ -30,18 +30,13 @@ return new class extends Migration
             ->onUpdate('cascade');
 
             $table->foreign('barber_id')
-                ->references('id')
-                ->on('barbers')
-                ->onDelete('set null')
-                ->onUpdate('cascade')
-                ->when(function ($query) {
-                    // Condición: solo cuando la id de barbershop sea igual a barbershop_id en la tabla barbers
-                    $query->whereExists(function ($query) {
-                        $query->selectRaw(1)
-                            ->from('barbers')
-                            ->whereColumn('barbers.barbershop_id', '=', 'barbershops.id');
-                    });
-                });
+            ->references('id')
+            ->on('users')
+            ->onDelete('set null')
+            ->onUpdate('cascade')
+            ->when(function ($query) {
+                $query->where('role', 'Barbero');
+            });
         });
     }
 

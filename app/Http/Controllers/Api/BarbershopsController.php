@@ -14,7 +14,7 @@ class BarbershopsController extends Controller
     public function index()
     {
         $barbershops = Barbershop::all();
-        return response()->json(['barbershops' => $barbershops]);
+        return response()->json(['success' => true, 'barbershops' => $barbershops]);
     }
 
     /**
@@ -30,7 +30,7 @@ class BarbershopsController extends Controller
         ]);
 
         $barbershop = Barbershop::create($data);
-        return response()->json(['barbershop' => $barbershop], 201);
+        return response()->json(['success' => true, 'message' => 'Barbershop created successfully', 'barbershop' => $barbershop], 201);
     }
 
     /**
@@ -39,7 +39,7 @@ class BarbershopsController extends Controller
     public function show(string $id)
     {
         $barbershop = Barbershop::findOrFail($id);
-        return response()->json(['barbershop' => $barbershop]);
+        return response()->json(['success' => true, 'barbershop' => $barbershop]);
     }
 
     /**
@@ -57,7 +57,7 @@ class BarbershopsController extends Controller
         ]);
 
         $barbershop->update($data);
-        return response()->json(['barbershop' => $barbershop]);
+        return response()->json(['success' => true, 'message' => 'Barbershop updated successfully', 'barbershop' => $barbershop]);
     }
 
     /**
@@ -67,6 +67,6 @@ class BarbershopsController extends Controller
     {
         $barbershop = Barbershop::findOrFail($id);
         $barbershop->delete();
-        return response()->json(['message' => 'Barbershop deleted successfully']);
+        return response()->json(['success' => true, 'message' => 'Barbershop deleted successfully']);
     }
 }

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Appointment;
 
 class Barbershop extends Model
 {
@@ -21,5 +22,10 @@ class Barbershop extends Model
     public function barbers()
     {
         return $this->hasMany(Barber::class);
+    }
+
+    public function appointments()
+    {
+        return $this->hasMany(Appointment::class)->cascadeDelete();
     }
 }
