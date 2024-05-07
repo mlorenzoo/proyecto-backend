@@ -69,19 +69,16 @@ class UsersController extends Controller
         $user = User::findOrFail($id);
 
         // Validar los datos de la solicitud
-        $request->validate([
-            'name' => 'string',
-            'surname' => 'string',
-            'email' => 'email|unique:users,email,' . $user->id,
+        $userData = $request->validate([
+            'name' => 'required|string',
+            'surname' => 'required|string',
+            'email' => 'required|email|unique:users,email,' . $user->id,
             'password' => 'string|min:8',
             'role' => 'string|in:Admin,Gestor,Barbero,Cliente',
             'pfp' => 'nullable|string',
             'address' => 'nullable|string',
             'phone' => 'nullable|string',
         ]);
-
-        // Actualizar los datos del usuario
-        $userData = $request->all();
 
         // Verificar si se proporcionó una nueva contraseña y hashearla
         if (isset($userData['password'])) {
@@ -90,9 +87,11 @@ class UsersController extends Controller
 
         // Actualizar el usuario con los datos proporcionados
         $user->update($userData);
+        //$user->setRawAttributes($userData);
+        //$user->save();
 
         // Devolver una respuesta JSON con el usuario actualizado y éxito true
-        return response()->json(['success' => true, 'data' => $user]);
+        return response()->json(['success' => true, 'data' => $userData]);
     }
 
     /**

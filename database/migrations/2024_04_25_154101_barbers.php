@@ -13,6 +13,7 @@ return new class extends Migration
     {
         // Tabla Barberos
         Schema::create('barbers', function (Blueprint $table) {
+            $table->id('id');
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->string('bio')->nullable();
             $table->string('experience')->nullable();
