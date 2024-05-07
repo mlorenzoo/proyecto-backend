@@ -33,20 +33,24 @@ class UsersController extends Controller
             'email' => 'required|email|unique:users',
             'password' => 'required|string|min:8',
             'role' => 'required|string|in:Admin,Gestor,Barbero,Cliente',
-            'pfp' => 'nullable|string',
+            'pfp' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',            
             'address' => 'nullable|string',
             'phone' => 'nullable|string',
         ]);
 
+        if ($request->hasFile('pfp')) {
+            // Guardar la imagen en la carpeta "profile" del almacenamiento
+            $path = $request->file('pfp')->store('profile', 'public');
+        } else {
+            $path = null;
+        }
         // Hash de la contraseña utilizando Bcrypt
         $password = Hash::make($request->password);
 
         // Crear un nuevo usuario con la contraseña hasheada
-        $user = User::create(array_merge($request->all(), ['password' => $password]));
-
+        $user = User::create(array_merge($request->all(), ['password' => $password, 'pfp' => $path]));
         // Devolver una respuesta JSON con el usuario creado y éxito true
-        return response()->json(['success' => true, 'data' => $user], 201);
-    }
+        return response()->json(['success' => true, 'data' => $user], 201);    }
 
     /**
      * Display the specified resource.
@@ -75,14 +79,20 @@ class UsersController extends Controller
             'email' => 'required|email|unique:users,email,' . $user->id,
             'password' => 'string|min:8',
             'role' => 'string|in:Admin,Gestor,Barbero,Cliente',
-            'pfp' => 'nullable|string',
+            'pfp' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',            
             'address' => 'nullable|string',
             'phone' => 'nullable|string',
         ]);
 
+        if ($request->hasFile('pfp')) {
+            // Guardar la nueva imagen en la carpeta "profile" del almacenamiento
+            $path = $request->file('pfp')->store('profile', 'public');
+            $request['pfp'] = $path;
+        }
+
         // Verificar si se proporcionó una nueva contraseña y hashearla
-        if (isset($userData['password'])) {
-            $userData['password'] = Hash::make($userData['password']);
+        if ($request->has('password')) {
+            $request['password'] = Hash::make($request['password']);
         }
 
         // Actualizar el usuario con los datos proporcionados
