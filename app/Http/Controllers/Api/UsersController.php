@@ -40,12 +40,9 @@ class UsersController extends Controller
             'phone' => 'nullable|string',
         ]);
 
-        Log::debug('estoy aqui');
         if ($request->hasFile('pfp')) {
             // Guardar la imagen en la carpeta "profile" del almacenamiento público
             $path = $request->file('pfp')->store('profile', 'public');
-            Log::debug($path);
-
         } else {
             $path = null;
         }        
