@@ -10,7 +10,7 @@ class Barbershop extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'ubication', 'gestor_id', 'barber_id'];
+    protected $fillable = ['name', 'ubication', 'lat', 'lon', 'gestor_id', 'barber_id'];
 
     // Relación con el gestor de la peluquería
     public function gestor()

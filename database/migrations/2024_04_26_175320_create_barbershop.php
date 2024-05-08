@@ -15,28 +15,23 @@ return new class extends Migration
             $table->id();
             $table->string('name')->unique();
             $table->string('ubication')->unique();
-            $table->unsignedBigInteger('gestor_id')->nullable(); // Cambiado de 'idgestor' a 'gestor_id'
+            $table->decimal('lat', 10, 8)->nullable();
+            $table->decimal('lon', 11, 8)->nullable();
+            $table->unsignedBigInteger('gestor_id')->nullable();
             $table->unsignedBigInteger('barber_id')->nullable();
             $table->timestamps();
 
             $table->foreign('gestor_id')
-            ->references('id')
-            ->on('users')
-            ->when(function ($query) {
-                // Condición: solo usuarios con el rol 'Gestor'
-                $query->where('role', 'Gestor');
-            })
-            ->onDelete('set null')
-            ->onUpdate('cascade');
+                ->references('id')
+                ->on('users')
+                ->onDelete('set null')
+                ->onUpdate('cascade');
 
             $table->foreign('barber_id')
-            ->references('id')
-            ->on('users')
-            ->onDelete('set null')
-            ->onUpdate('cascade')
-            ->when(function ($query) {
-                $query->where('role', 'Barbero');
-            });
+                ->references('id')
+                ->on('users')
+                ->onDelete('set null')
+                ->onUpdate('cascade');
         });
     }
 
