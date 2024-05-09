@@ -25,6 +25,8 @@ class BarbershopsController extends Controller
         $data = $request->validate([
             'name' => 'required|string|unique:barbershops',
             'ubication' => 'required|string|unique:barbershops',
+            'lat' => 'nullable|numeric',
+            'lon' => 'nullable|numeric',
             'gestor_id' => 'nullable|exists:users,id',
             'barber_id' => 'nullable|exists:barbers,id',
         ]);
@@ -52,6 +54,8 @@ class BarbershopsController extends Controller
         $data = $request->validate([
             'name' => 'string|unique:barbershops,name,' . $id,
             'ubication' => 'string|unique:barbershops,ubication,' . $id,
+            'lat' => 'nullable|numeric',
+            'lon' => 'nullable|numeric',
             'gestor_id' => 'nullable|exists:users,id',
             'barber_id' => 'nullable|exists:barbers,id',
         ]);
