@@ -56,8 +56,7 @@ class BarbershopsController extends Controller
             'ubication' => 'string|unique:barbershops,ubication,' . $id,
             'lat' => 'nullable|numeric',
             'lon' => 'nullable|numeric',
-            'gestor_id' => 'nullable|exists:users,id',
-            'barber_id' => 'nullable|exists:barbers,id',
+            'gestor_id' => 'nullable|exists:users,id'
         ]);
 
         $barbershop->update($data);

@@ -26,12 +26,6 @@ return new class extends Migration
                 ->on('users')
                 ->onDelete('set null')
                 ->onUpdate('cascade');
-
-            $table->foreign('barber_id')
-                ->references('id')
-                ->on('users')
-                ->onDelete('set null')
-                ->onUpdate('cascade');
         });
     }
 
