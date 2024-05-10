@@ -94,27 +94,18 @@ class UsersController extends Controller
             'email' => 'email|unique:users,email,' . $user->id,
             'password' => 'string|min:8',
             'role' => 'string|in:Admin,Gestor,Barbero,Cliente',
-            'pfp' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',            
+            'pfp' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'address' => 'nullable|string',
             'phone' => 'nullable|string',
         ]);
-    
-        // Verificar y actualizar cada campo solo si no está vacío o no es igual al valor existente
-        foreach ($userData as $key => $value) {
-            if (!empty($value) && $value !== $user->{$key}) {
-                // Si el campo es una imagen, guardarla en el almacenamiento
-                if ($key === 'pfp') {
-                    $path = $request->file('pfp')->store('profile', 'public');
-                    $userData[$key] = $path;
-                }
-                // Si el campo es una contraseña, hashearla
-                if ($key === 'password') {
-                    $userData[$key] = Hash::make($value);
-                }
-            } else {
-                // Si el campo está vacío o no se modificó, mantener el valor existente
-                $userData[$key] = $user->{$key};
+        if ($request->hasFile('pfp')) {
+            // Eliminar la imagen anterior si existe
+            if ($user->pfp) {
+                Storage::disk('public')->delete($user->pfp);
             }
+    
+            $path = $request->file('pfp')->store('profile', 'public');
+            $userData['pfp'] = $path;
         }
     
         // Actualizar el usuario con los datos proporcionados
