@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\User;
+use App\Models\Barber;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
@@ -29,33 +30,42 @@ class UsersController extends Controller
     public function store(Request $request)
     {
         // Validar los datos de la solicitud
-        $request->validate([
+        $data = $request->validate([
             'name' => 'required|string',
             'surname' => 'required|string',
             'email' => 'required|email|unique:users',
             'password' => 'required|string|min:8',
             'role' => 'required|string|in:Admin,Gestor,Barbero,Cliente',
-            'pfp' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',            
+            'pfp' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'address' => 'nullable|string',
             'phone' => 'nullable|string',
         ]);
 
-        Log::debug('estoy aqui');
-        if ($request->hasFile('pfp')) {
-            // Guardar la imagen en la carpeta "profile" del almacenamiento público
-            $path = $request->file('pfp')->store('profile', 'public');
-            Log::debug($path);
-
-        } else {
-            $path = null;
-        }        
-        // Hash de la contraseña utilizando Bcrypt
+        // Crear el usuario
         $password = Hash::make($request->password);
+        $path = null;
+        if ($request->hasFile('pfp')) {
+            $path = $request->file('pfp')->store('profile', 'public');
+        }
+        $userData = User::create(array_merge($request->all(), ['password' => $password, 'pfp' => $path]));
 
-        // Crear un nuevo usuario con la contraseña hasheada
-        $user = User::create(array_merge($request->all(), ['password' => $password, 'pfp' => $path]));
+        // Verificar si el rol es "Barbero" y crear el registro de barbero asociado al usuario
+        if ($data['role'] === 'Barbero') {
+            $barberData = Barber::create([
+                'user_id' => $userData['id'],
+                'bio' => null,
+                'experience' => null,
+                'specialties' => null,
+                'pics' => null,
+                'barbershop_id' => null
+            ]);
+            Log::debug($barberData);
+            return response()->json(['success' => true, 'data' => ['user' => $userData, 'barber' => $barberData]], 201);
+            
+        }
         // Devolver una respuesta JSON con el usuario creado y éxito true
-        return response()->json(['success' => true, 'data' => $user], 201);    }
+        return response()->json(['success' => true, 'data' => $user], 201);
+    }
 
     /**
      * Display the specified resource.

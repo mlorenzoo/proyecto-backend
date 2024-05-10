@@ -17,7 +17,7 @@ class BarbersController extends Controller
         $barbers = Barber::with('user', 'barbershop')->get();
 
         // Devolver una respuesta JSON con los barberos
-        return response()->json($barbers);
+        return response()->json(['success' => true, 'data' => $barbers]);
     }
 
     /**
@@ -75,7 +75,7 @@ class BarbersController extends Controller
         $barber->update($request->all());
 
         // Devolver una respuesta JSON con el barbero actualizado
-        return response()->json($barber);
+        return response()->json(['success' => true, 'data' => $barber]);
     }
 
     /**

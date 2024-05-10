@@ -21,6 +21,7 @@ class Barber extends Model
         'experience',
         'specialties',
         'pics',
+        'user_id',
         'barbershop_id', // Agregar la columna barbershop_id
     ];
 
