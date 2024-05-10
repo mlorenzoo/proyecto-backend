@@ -73,37 +73,42 @@ class UsersController extends Controller
     {
         // Buscar el usuario por su ID
         $user = User::findOrFail($id);
-
+    
         // Validar los datos de la solicitud
         $userData = $request->validate([
-            'name' => 'required|string',
-            'surname' => 'required|string',
-            'email' => 'required|email|unique:users,email,' . $user->id,
+            'name' => 'string',
+            'surname' => 'string',
+            'email' => 'email|unique:users,email,' . $user->id,
             'password' => 'string|min:8',
             'role' => 'string|in:Admin,Gestor,Barbero,Cliente',
             'pfp' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',            
             'address' => 'nullable|string',
             'phone' => 'nullable|string',
         ]);
-
-        if ($request->hasFile('pfp')) {
-            // Guardar la nueva imagen en la carpeta "profile" del almacenamiento
-            $path = $request->file('pfp')->store('profile', 'public');
-            $request['pfp'] = $path;
+    
+        // Verificar y actualizar cada campo solo si no está vacío o no es igual al valor existente
+        foreach ($userData as $key => $value) {
+            if (!empty($value) && $value !== $user->{$key}) {
+                // Si el campo es una imagen, guardarla en el almacenamiento
+                if ($key === 'pfp') {
+                    $path = $request->file('pfp')->store('profile', 'public');
+                    $userData[$key] = $path;
+                }
+                // Si el campo es una contraseña, hashearla
+                if ($key === 'password') {
+                    $userData[$key] = Hash::make($value);
+                }
+            } else {
+                // Si el campo está vacío o no se modificó, mantener el valor existente
+                $userData[$key] = $user->{$key};
+            }
         }
-
-        // Verificar si se proporcionó una nueva contraseña y hashearla
-        if ($request->has('password')) {
-            $request['password'] = Hash::make($request['password']);
-        }
-
+    
         // Actualizar el usuario con los datos proporcionados
         $user->update($userData);
-        //$user->setRawAttributes($userData);
-        //$user->save();
-
+    
         // Devolver una respuesta JSON con el usuario actualizado y éxito true
-        return response()->json(['success' => true, 'data' => $userData]);
+        return response()->json(['success' => true, 'data' => $user]);
     }
 
     /**
