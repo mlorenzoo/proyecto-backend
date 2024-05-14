@@ -10,7 +10,6 @@ use App\Http\Controllers\Api\TokenController;
 use App\Http\Controllers\Api\AppointmentController;
 use App\Http\Controllers\Api\BarberServiceController;
 use App\Http\Controllers\Api\CustomerSubscriptionController;
-use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\BarbershopsController;
 
 /*
