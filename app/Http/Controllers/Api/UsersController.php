@@ -111,7 +111,6 @@ class UsersController extends Controller
         // Actualizar el usuario con los datos proporcionados
         $user->update($userData);
     
-        // Devolver una respuesta JSON con el usuario actualizado y éxito true
         return response()->json(['success' => true, 'data' => $user]);
     }
 
