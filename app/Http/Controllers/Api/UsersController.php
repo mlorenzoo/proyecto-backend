@@ -5,10 +5,13 @@ namespace App\Http\Controllers\Api;
 use App\Models\User;
 use App\Models\Barber;
 use App\Models\Client;
+use App\Models\BarberSchedule;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage; // Necesario para trabajar con almacenamiento de archivos
+
 
 
 class UsersController extends Controller
@@ -31,7 +34,7 @@ class UsersController extends Controller
     public function store(Request $request)
     {
         // Validar los datos de la solicitud
-        $data = $request->validate([
+        $userData = $request->validate([
             'name' => 'required|string',
             'surname' => 'required|string',
             'email' => 'required|email|unique:users',
@@ -42,39 +45,54 @@ class UsersController extends Controller
             'phone' => 'nullable|string',
         ]);
 
-        // Crear el usuario
-        $password = Hash::make($request->password);
+        // Crear el usuarioa
+        $password = Hash::make($userData['password']);
         $path = null;
         if ($request->hasFile('pfp')) {
             $path = $request->file('pfp')->store('profile', 'public');
         }
-        $userData = User::create(array_merge($request->all(), ['password' => $password, 'pfp' => $path]));
+        $user = User::create(array_merge($userData, ['password' => $password, 'pfp' => $path]));
 
         // Verificar si el rol es "Barbero" y crear el registro de barbero asociado al usuario
-        if ($data['role'] === 'Barbero') {
+        if ($userData['role'] === 'Barbero') {
             $barberData = Barber::create([
-                'user_id' => $userData['id'],
+                'user_id' => $user->id,
                 'bio' => null,
                 'experience' => null,
                 'specialties' => null,
                 'pics' => null,
                 'barbershop_id' => null
             ]);
+            $months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'September', 'October', 'November', 'December'];
+            foreach ($months as $month) {
+                if ($month !== 'August') {
+                    foreach (['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'] as $dayOfWeek) {
+                        BarberSchedule::create([
+                            'barber_id' => $barberData->id,
+                            'day_of_week' => $dayOfWeek,
+                            'start_time' => '09:00:00', // Horario de inicio predeterminado
+                            'end_time' => '17:00:00', // Horario de fin predeterminado
+                            'month' => $month,
+                        ]);
+                    }
+                }
+            }            
             Log::debug($barberData);
-            return response()->json(['success' => true, 'data' => ['user' => $userData, 'barber' => $barberData]], 201);   
+            return response()->json(['success' => true, 'data' => ['user' => $user, 'barber' => $barberData]], 201);   
         }
-        if ($data['role'] === 'Cliente') {
+    
+        // Verificar si el usuario es un cliente y crearlo si es necesario
+        if ($userData['role'] === 'Cliente') {
             $clientData = Client::create([
-                'user_id' => $userData['id'],
+                'user_id' => $user->id,
                 'subscribed' => false,
-                
             ]);
             Log::debug($clientData);
         }
+    
         // Devolver una respuesta JSON con el usuario creado y éxito true
-        return response()->json(['success' => true, 'data' => $userData], 201);
-    }
-
+        return response()->json(['success' => true, 'data' => $user], 201);
+    }   
     /**
      * Display the specified resource.
      */
@@ -82,8 +100,26 @@ class UsersController extends Controller
     {
         // Buscar el usuario por su ID
         $user = User::findOrFail($id);
-
-        // Devolver una respuesta JSON con el usuario encontrado y éxito true
+    
+        // Verificar si el usuario es de tipo "Barbero"
+        if ($user->role === 'Barbero') {
+            // Si es barbero, obtener los datos del barbero asociado
+            $barber = Barber::where('user_id', $user->id)->first();
+    
+            // Verificar si se encontró un registro de barbero asociado
+            if ($barber) {
+                // Si se encontró, agregar los datos del barbero al objeto del usuario
+                $user->barber = $barber;
+    
+                // Obtener los horarios del barbero
+                $barberSchedules = BarberSchedule::where('barber_id', $barber->id)->get();
+    
+                // Agregar los horarios al objeto del barbero
+                $user->barber->schedules = $barberSchedules;
+            }
+        }
+    
+        // Devolver una respuesta JSON con el usuario (y sus datos de barbero y horarios si corresponde) y éxito true
         return response()->json(['success' => true, 'data' => $user]);
     }
 
@@ -112,6 +148,7 @@ class UsersController extends Controller
                 Storage::disk('public')->delete($user->pfp);
             }
     
+            // Almacenar la nueva imagen y actualizar la ruta en los datos del usuario
             $path = $request->file('pfp')->store('profile', 'public');
             $userData['pfp'] = $path;
         }
@@ -121,6 +158,27 @@ class UsersController extends Controller
     
         return response()->json(['success' => true, 'data' => $user]);
     }
+
+    public function updateBarberSchedule(Request $request, $barberId, $scheduleId)
+    {
+        // Buscar el horario del barbero por su ID
+        $schedule = BarberSchedule::where('barber_id', $barberId)->findOrFail($scheduleId);
+
+        // Validar los datos de la solicitud
+        $scheduleData = $request->validate([
+            'day_of_week' => 'integer|between:1,7', // Validar que el día de la semana esté entre 1 y 7 (Lunes a Domingo)
+            'start_time' => 'date_format:H:i:s', // Validar el formato de la hora de inicio
+            'end_time' => 'date_format:H:i:s', // Validar el formato de la hora de fin
+            'month' => 'string', // Puedes agregar más validaciones según tus necesidades
+        ]);
+
+        // Actualizar el horario del barbero con los datos proporcionados
+        $schedule->update($scheduleData);
+
+        // Devolver una respuesta JSON con el horario actualizado y éxito true
+        return response()->json(['success' => true, 'data' => $schedule]);
+    }
+
 
     /**
      * Remove the specified resource from storage.
