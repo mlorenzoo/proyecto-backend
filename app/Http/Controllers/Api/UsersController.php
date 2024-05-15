@@ -64,7 +64,7 @@ class UsersController extends Controller
             
         }
         // Devolver una respuesta JSON con el usuario creado y éxito true
-        return response()->json(['success' => true, 'data' => $user], 201);
+        return response()->json(['success' => true, 'data' => $userData], 201);
     }
 
     /**
