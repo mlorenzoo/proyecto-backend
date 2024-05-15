@@ -14,10 +14,10 @@ return new class extends Migration
         // Tabla Pagos
         Schema::create('payments', function (Blueprint $table) {
             $table->id('id');
-            $table->foreignId('client_id')->constrained('clients')->onDelete('cascade');
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->date('pay_date');
+            $table->string('plan'); // Agregamos la columna 'plan'
             $table->decimal('amount', 10, 2);
-            $table->string('pay_method');
             $table->timestamps();
         });
     }
@@ -27,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        //
+        Schema::dropIfExists('payments');
     }
 };

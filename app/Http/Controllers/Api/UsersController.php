@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Models\User;
 use App\Models\Barber;
+use App\Models\Client;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
@@ -60,11 +61,18 @@ class UsersController extends Controller
                 'barbershop_id' => null
             ]);
             Log::debug($barberData);
-            return response()->json(['success' => true, 'data' => ['user' => $userData, 'barber' => $barberData]], 201);
-            
+            return response()->json(['success' => true, 'data' => ['user' => $userData, 'barber' => $barberData]], 201);   
+        }
+        if ($data['role'] === 'Cliente') {
+            $clientData = Client::create([
+                'user_id' => $userData['id'],
+                'subscribed' => false,
+                
+            ]);
+            Log::debug($clientData);
         }
         // Devolver una respuesta JSON con el usuario creado y éxito true
-        return response()->json(['success' => true, 'data' => $user], 201);
+        return response()->json(['success' => true, 'data' => $userData], 201);
     }
 
     /**

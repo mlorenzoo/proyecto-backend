@@ -13,8 +13,9 @@ return new class extends Migration
     {
         // Tabla Clientes
         Schema::create('clients', function (Blueprint $table) {
-            $table->id('id');
+            $table->id();
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->boolean('subscribed')->default(false);
             $table->timestamps();
         });
     }
@@ -24,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        //
+        Schema::dropIfExists('clients');
     }
 };
