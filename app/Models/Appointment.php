@@ -9,7 +9,7 @@ class Appointment extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['barber_id', 'client_id', 'services_id', 'date', 'state', 'notes'];
+    protected $fillable = ['barber_id', 'client_id', 'date', 'state', 'notes'];
 
     // Relación con el barbero
     public function barber()
@@ -24,8 +24,8 @@ class Appointment extends Model
     }
 
     // Relación con los servicios de la cita
-    public function services()
-    {
-        return $this->hasMany(Service::class, 'services_id');
-    }
+    // public function services()
+    // {
+    //     return $this->hasMany(Service::class, 'services_id');
+    // }
 }

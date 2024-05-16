@@ -62,24 +62,8 @@ class UsersController extends Controller
                 'barbershop_id' => null
             ]);
 
-            $months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'September', 'October', 'November', 'December'];
-            $daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+            $this->createDefaultBarberSchedules($barberData->id);
 
-            foreach ($months as $month) {
-                if ($month !== 'August') { // Si no es agosto
-                    foreach ($daysOfWeek as $dayOfWeek) {
-                        BarberSchedule::create([
-                            'barber_id' => $barberData->id,
-                            'day_of_week' => $dayOfWeek,
-                            'start_time' => '09:00:00', // Horario de inicio predeterminado
-                            'end_time' => '17:00:00', // Horario de fin predeterminado
-                            'month' => $month,
-                        ]);
-                    }
-                }
-            }
-
-            Log::debug($barberData);
             return response()->json(['success' => true, 'data' => ['user' => $user, 'barber' => $barberData]], 201);
         }
 
@@ -93,8 +77,7 @@ class UsersController extends Controller
         }
 
         // Devolver una respuesta JSON con el usuario creado y éxito true
-        return response()->json(['success' => true, 'data' => $user], 201);
-    }
+        return response()->json(['success' => true, 'data' => $user], 201);    }
 
     /**
      * Display the specified resource.
@@ -111,18 +94,11 @@ class UsersController extends Controller
 
             // Verificar si se encontró un registro de barbero asociado
             if ($barber) {
-                // Si se encontró, agregar los datos del barbero al objeto del usuario
                 $user->barber = $barber;
-
-                // Obtener los horarios del barbero
                 $barberSchedules = BarberSchedule::where('barber_id', $barber->id)->get();
-
-                // Agregar los horarios al objeto del barbero
                 $user->barber->schedules = $barberSchedules;
             }
         }
-
-        // Devolver una respuesta JSON con el usuario (y sus datos de barbero y horarios si corresponde) y éxito true
         return response()->json(['success' => true, 'data' => $user]);
     }
 
@@ -164,21 +140,16 @@ class UsersController extends Controller
 
     public function updateBarberSchedule(Request $request, $barberId, $scheduleId)
     {
-        // Buscar el horario del barbero por su ID
         $schedule = BarberSchedule::where('barber_id', $barberId)->findOrFail($scheduleId);
 
-        // Validar los datos de la solicitud
         $scheduleData = $request->validate([
-            'day_of_week' => 'integer|between:1,7', // Validar que el día de la semana esté entre 1 y 7 (Lunes a Domingo)
-            'start_time' => 'date_format:H:i:s', // Validar el formato de la hora de inicio
-            'end_time' => 'date_format:H:i:s', // Validar el formato de la hora de fin
-            'month' => 'string', // Puedes agregar más validaciones según tus necesidades
+            'day_of_week' => 'required|string|in:Monday,Tuesday,Wednesday,Thursday,Friday,Saturday,Sunday',
+            'start_time' => 'required|date_format:H:i:s',
+            'end_time' => 'required|date_format:H:i:s',
         ]);
 
-        // Actualizar el horario del barbero con los datos proporcionados
         $schedule->update($scheduleData);
 
-        // Devolver una respuesta JSON con el horario actualizado y éxito true
         return response()->json(['success' => true, 'data' => $schedule]);
     }
 
@@ -193,5 +164,19 @@ class UsersController extends Controller
 
         // Devolver una respuesta JSON indicando si el usuario fue eliminado con éxito
         return response()->json(['success' => true, 'message' => 'User deleted successfully']);
+    }
+
+    private function createDefaultBarberSchedules($barberId)
+    {
+        $daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+
+        foreach ($daysOfWeek as $dayOfWeek) {
+            BarberSchedule::create([
+                'barber_id' => $barberId,
+                'day_of_week' => $dayOfWeek,
+                'start_time' => '09:00:00',
+                'end_time' => '17:00:00',
+            ]);
+        }
     }
 }

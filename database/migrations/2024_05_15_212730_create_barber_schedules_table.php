@@ -19,10 +19,9 @@ class CreateBarberSchedulesTable extends Migration
             $table->enum('day_of_week', ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']);
             $table->time('start_time');
             $table->time('end_time');
-            $table->enum('month', ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']); // Campo ENUM para el mes
             $table->timestamps();
 
-            $table->unique(['barber_id', 'day_of_week', 'month']); // Asegura que solo haya un horario por barbero por día y mes
+            $table->unique(['barber_id', 'day_of_week']);
         });
     }
 
