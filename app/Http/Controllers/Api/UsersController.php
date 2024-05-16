@@ -12,8 +12,6 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage; // Necesario para trabajar con almacenamiento de archivos
 
-
-
 class UsersController extends Controller
 {
     /**
@@ -45,7 +43,7 @@ class UsersController extends Controller
             'phone' => 'nullable|string',
         ]);
 
-        // Crear el usuarioa
+        // Crear el usuario
         $password = Hash::make($userData['password']);
         $path = null;
         if ($request->hasFile('pfp')) {
@@ -63,10 +61,13 @@ class UsersController extends Controller
                 'pics' => null,
                 'barbershop_id' => null
             ]);
+
             $months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'September', 'October', 'November', 'December'];
+            $daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+
             foreach ($months as $month) {
-                if ($month !== 'August') {
-                    foreach (['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'] as $dayOfWeek) {
+                if ($month !== 'August') { // Si no es agosto
+                    foreach ($daysOfWeek as $dayOfWeek) {
                         BarberSchedule::create([
                             'barber_id' => $barberData->id,
                             'day_of_week' => $dayOfWeek,
@@ -76,11 +77,12 @@ class UsersController extends Controller
                         ]);
                     }
                 }
-            }            
+            }
+
             Log::debug($barberData);
-            return response()->json(['success' => true, 'data' => ['user' => $user, 'barber' => $barberData]], 201);   
+            return response()->json(['success' => true, 'data' => ['user' => $user, 'barber' => $barberData]], 201);
         }
-    
+
         // Verificar si el usuario es un cliente y crearlo si es necesario
         if ($userData['role'] === 'Cliente') {
             $clientData = Client::create([
@@ -89,10 +91,11 @@ class UsersController extends Controller
             ]);
             Log::debug($clientData);
         }
-    
+
         // Devolver una respuesta JSON con el usuario creado y éxito true
         return response()->json(['success' => true, 'data' => $user], 201);
-    }   
+    }
+
     /**
      * Display the specified resource.
      */
@@ -100,25 +103,25 @@ class UsersController extends Controller
     {
         // Buscar el usuario por su ID
         $user = User::findOrFail($id);
-    
+
         // Verificar si el usuario es de tipo "Barbero"
         if ($user->role === 'Barbero') {
             // Si es barbero, obtener los datos del barbero asociado
             $barber = Barber::where('user_id', $user->id)->first();
-    
+
             // Verificar si se encontró un registro de barbero asociado
             if ($barber) {
                 // Si se encontró, agregar los datos del barbero al objeto del usuario
                 $user->barber = $barber;
-    
+
                 // Obtener los horarios del barbero
                 $barberSchedules = BarberSchedule::where('barber_id', $barber->id)->get();
-    
+
                 // Agregar los horarios al objeto del barbero
                 $user->barber->schedules = $barberSchedules;
             }
         }
-    
+
         // Devolver una respuesta JSON con el usuario (y sus datos de barbero y horarios si corresponde) y éxito true
         return response()->json(['success' => true, 'data' => $user]);
     }
@@ -130,7 +133,7 @@ class UsersController extends Controller
     {
         // Buscar el usuario por su ID
         $user = User::findOrFail($id);
-    
+
         // Validar los datos de la solicitud
         $userData = $request->validate([
             'name' => 'string',
@@ -147,15 +150,15 @@ class UsersController extends Controller
             if ($user->pfp) {
                 Storage::disk('public')->delete($user->pfp);
             }
-    
+
             // Almacenar la nueva imagen y actualizar la ruta en los datos del usuario
             $path = $request->file('pfp')->store('profile', 'public');
             $userData['pfp'] = $path;
         }
-    
+
         // Actualizar el usuario con los datos proporcionados
         $user->update($userData);
-    
+
         return response()->json(['success' => true, 'data' => $user]);
     }
 
@@ -178,7 +181,6 @@ class UsersController extends Controller
         // Devolver una respuesta JSON con el horario actualizado y éxito true
         return response()->json(['success' => true, 'data' => $schedule]);
     }
-
 
     /**
      * Remove the specified resource from storage.
