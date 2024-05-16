@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 
 class UsersController extends Controller
@@ -94,7 +95,7 @@ class UsersController extends Controller
     {
         // Buscar el usuario por su ID
         $user = User::findOrFail($id);
-    
+
         // Validar los datos de la solicitud
         $userData = $request->validate([
             'name' => 'string',
@@ -106,19 +107,20 @@ class UsersController extends Controller
             'address' => 'nullable|string',
             'phone' => 'nullable|string',
         ]);
+
         if ($request->hasFile('pfp')) {
             // Eliminar la imagen anterior si existe
             if ($user->pfp) {
                 Storage::disk('public')->delete($user->pfp);
             }
-    
+
             $path = $request->file('pfp')->store('profile', 'public');
             $userData['pfp'] = $path;
         }
-    
+
         // Actualizar el usuario con los datos proporcionados
         $user->update($userData);
-    
+
         return response()->json(['success' => true, 'data' => $user]);
     }
 
@@ -133,5 +135,24 @@ class UsersController extends Controller
 
         // Devolver una respuesta JSON indicando si el usuario fue eliminado con éxito
         return response()->json(['success' => true, 'message' => 'User deleted successfully']);
+    }
+
+    public function updateProfilePicture(Request $request, string $id)
+    {
+        $user = User::findOrFail($id);
+
+        $request->validate([
+            'pfp' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+
+        if ($user->pfp) {
+            Storage::disk('public')->delete($user->pfp);
+        }
+
+        $path = $request->file('pfp')->store('profile', 'public');
+
+        $user->update(['pfp' => $path]);
+
+        return response()->json(['success' => true, 'message' => 'Profile picture updated successfully']);
     }
 }

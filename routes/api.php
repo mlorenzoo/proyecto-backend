@@ -31,6 +31,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::apiResource('users', UsersController::class);
+Route::post('users/{id}/update-pfp', [UsersController::class, 'updateProfilePicture']);
 Route::apiResource('subscriptions', SubscriptionsController::class);
 Route::apiResource('services', ServicesController::class);
 Route::apiResource('barbers', BarbersController::class);
