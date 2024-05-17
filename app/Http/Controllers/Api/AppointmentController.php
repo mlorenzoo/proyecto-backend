@@ -31,6 +31,8 @@ class AppointmentController extends Controller
         $barberSchedule = BarberSchedule::forBarberAndDay($barberId, $dayOfWeek)->first();
     
         Log::info('Barber Schedule: ' . $barberSchedule);
+        Log::info('Barber Id: ' . $barberId);
+        Log::info('Day of week: ' . $dayOfWeek);
     
         if (!$barberSchedule) {
             return response()->json(['message' => 'No schedule available for the barber on this date'], 400);
