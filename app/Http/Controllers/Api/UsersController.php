@@ -108,6 +108,11 @@ class UsersController extends Controller
             'phone' => 'nullable|string',
         ]);
 
+        // Si se ha enviado una nueva contraseña, hashearla
+        if (isset($userData['password'])) {
+            $userData['password'] = Hash::make($userData['password']);
+        }
+
         if ($request->hasFile('pfp')) {
             // Eliminar la imagen anterior si existe
             if ($user->pfp) {
