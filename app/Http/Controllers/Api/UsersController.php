@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Models\User;
 use App\Models\Barber;
 use App\Models\Client;
+use App\Models\BarberSchedule;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
@@ -32,7 +33,7 @@ class UsersController extends Controller
     public function store(Request $request)
     {
         // Validar los datos de la solicitud
-        $data = $request->validate([
+        $userData = $request->validate([
             'name' => 'required|string',
             'surname' => 'required|string',
             'email' => 'required|email|unique:users',
@@ -44,37 +45,40 @@ class UsersController extends Controller
         ]);
 
         // Crear el usuario
-        $password = Hash::make($request->password);
+        $password = Hash::make($userData['password']);
         $path = null;
         if ($request->hasFile('pfp')) {
             $path = $request->file('pfp')->store('profile', 'public');
         }
-        $userData = User::create(array_merge($request->all(), ['password' => $password, 'pfp' => $path]));
+        $user = User::create(array_merge($userData, ['password' => $password, 'pfp' => $path]));
 
         // Verificar si el rol es "Barbero" y crear el registro de barbero asociado al usuario
-        if ($data['role'] === 'Barbero') {
+        if ($userData['role'] === 'Barbero') {
             $barberData = Barber::create([
-                'user_id' => $userData['id'],
+                'user_id' => $user->id,
                 'bio' => null,
                 'experience' => null,
                 'specialties' => null,
                 'pics' => null,
                 'barbershop_id' => null
             ]);
-            Log::debug($barberData);
-            return response()->json(['success' => true, 'data' => ['user' => $userData, 'barber' => $barberData]], 201);   
+
+            $this->createDefaultBarberSchedules($barberData->id);
+
+            return response()->json(['success' => true, 'data' => ['user' => $user, 'barber' => $barberData]], 201);
         }
-        if ($data['role'] === 'Cliente') {
+
+        // Verificar si el usuario es un cliente y crearlo si es necesario
+        if ($userData['role'] === 'Cliente') {
             $clientData = Client::create([
-                'user_id' => $userData['id'],
+                'user_id' => $user->id,
                 'subscribed' => false,
-                
             ]);
             Log::debug($clientData);
         }
+
         // Devolver una respuesta JSON con el usuario creado y éxito true
-        return response()->json(['success' => true, 'data' => $userData], 201);
-    }
+        return response()->json(['success' => true, 'data' => $user], 201);    }
 
     /**
      * Display the specified resource.
@@ -84,7 +88,18 @@ class UsersController extends Controller
         // Buscar el usuario por su ID
         $user = User::findOrFail($id);
 
-        // Devolver una respuesta JSON con el usuario encontrado y éxito true
+        // Verificar si el usuario es de tipo "Barbero"
+        if ($user->role === 'Barbero') {
+            // Si es barbero, obtener los datos del barbero asociado
+            $barber = Barber::where('user_id', $user->id)->first();
+
+            // Verificar si se encontró un registro de barbero asociado
+            if ($barber) {
+                $user->barber = $barber;
+                $barberSchedules = BarberSchedule::where('barber_id', $barber->id)->get();
+                $user->barber->schedules = $barberSchedules;
+            }
+        }
         return response()->json(['success' => true, 'data' => $user]);
     }
 
@@ -95,6 +110,7 @@ class UsersController extends Controller
     {
         // Buscar el usuario por su ID
         $user = User::findOrFail($id);
+
 
         // Validar los datos de la solicitud
         $userData = $request->validate([
@@ -123,10 +139,26 @@ class UsersController extends Controller
             $userData['pfp'] = $path;
         }
 
+
         // Actualizar el usuario con los datos proporcionados
         $user->update($userData);
 
         return response()->json(['success' => true, 'data' => $user]);
+    }
+
+    public function updateBarberSchedule(Request $request, $barberId, $scheduleId)
+    {
+        $schedule = BarberSchedule::where('barber_id', $barberId)->findOrFail($scheduleId);
+
+        $scheduleData = $request->validate([
+            'day_of_week' => 'required|string|in:Monday,Tuesday,Wednesday,Thursday,Friday,Saturday,Sunday',
+            'start_time' => 'required|date_format:H:i:s',
+            'end_time' => 'required|date_format:H:i:s',
+        ]);
+
+        $schedule->update($scheduleData);
+
+        return response()->json(['success' => true, 'data' => $schedule]);
     }
 
     /**

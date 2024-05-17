@@ -16,11 +16,13 @@ return new class extends Migration
             $table->id('id');
             $table->foreignId('barber_id')->constrained('barbers')->onDelete('cascade');
             $table->foreignId('client_id')->constrained('clients')->onDelete('cascade');
-            $table->foreignId('service_id')->constrained('services')->onDelete('cascade');
             $table->dateTime('date');
+            $table->time('hour');
             $table->enum('state', ['programada', 'confirmada', 'completada', 'cancelada']);
             $table->text('notes')->nullable();
             $table->timestamps();
+
+            $table->unique(['barber_id', 'date', 'hour']);
         });
     }
 

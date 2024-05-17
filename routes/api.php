@@ -39,6 +39,8 @@ Route::apiResource('barbershops', BarbershopsController::class);
 Route::apiResource('payments', PaymentController::class);
 Route::apiResource('clients', ClientsController::class);
 Route::apiResource('userclient', UserClientController::class);
+Route::get('/barbers/{id}/schedules', [BarbersController::class, 'getSchedules']);
+Route::get('/barbers/{barberId}/appointments', [AppointmentController::class, 'index']);
 
 // TokenController
 Route::middleware('auth:sanctum')->get('/user', [TokenController::class, 'user']);

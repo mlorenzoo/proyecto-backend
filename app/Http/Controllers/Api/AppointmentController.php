@@ -3,50 +3,128 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\Appointment;
+use App\Models\BarberSchedule;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
+
 
 class AppointmentController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(Request $request, $barberId)
     {
-        $appointments = Appointment::all();
-        return response()->json($appointments);
+        $date = $request->query('date');
+    
+        if (!$barberId) {
+            return response()->json(['message' => 'Barber ID is required'], 400);
+        }
+    
+        if (!$date) {
+            return response()->json(['message' => 'Date is required'], 400);
+        }
+    
+        $date = Carbon::parse($date);
+        $dayOfWeek = $date->format('l');
+        Log::info($dayOfWeek);
+    
+        $barberSchedule = BarberSchedule::where('barber_id', $barberId)
+            ->where('day_of_week', $dayOfWeek)
+            ->first();
+    
+        Log::info('Barber Schedule: ' . $barberSchedule);
+    
+        if (!$barberSchedule) {
+            return response()->json(['message' => 'No schedule available for the barber on this date'], 400);
+        }
+    
+        $startDateTime = Carbon::parse($date->format('Y-m-d') . ' ' . $barberSchedule->start_time);
+        $endDateTime = Carbon::parse($date->format('Y-m-d') . ' ' . $barberSchedule->end_time);
+    
+        $existingAppointments = Appointment::where('barber_id', $barberId)
+            ->whereDate('date', $date)
+            ->pluck('hour');
+    
+        $availableHours = [];
+        for ($time = $startDateTime; $time->lt($endDateTime); $time->addHour()) {
+            $hour = $time->format('H:i');
+            if (!$existingAppointments->contains($hour)) {
+                $availableHours[] = $hour;
+            }
+        }
+    
+        return response()->json(['available_hours' => $availableHours]);
     }
-
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         $validatedData = $request->validate([
             'barber_id' => 'required|exists:users,id',
             'client_id' => 'required|exists:users,id',
-            'services_id' => 'required|exists:services,id',
             'date' => 'required|date',
+            'hour' => 'required|regex:/^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/',
             'state' => 'required|in:programada,confirmada,completada,cancelada',
             'notes' => 'nullable|string',
         ]);
+
+        $date = Carbon::parse($validatedData['date']);
+        $dayOfWeek = $date->format('l');
+
+        $barberSchedule = BarberSchedule::where('barber_id', $validatedData['barber_id'])
+            ->where('day_of_week', $dayOfWeek)
+            ->first();
+
+        if (!$barberSchedule) {
+            return response()->json(['message' => 'No hay horario disponible para el barbero en esta fecha'], 400);
+        }
+
+        $appointmentTime = Carbon::parse($validatedData['date'] . ' ' . $validatedData['hour']);
+        $startTime = Carbon::parse($validatedData['date'] . ' ' . $barberSchedule->start_time);
+        $endTime = Carbon::parse($validatedData['date'] . ' ' . $barberSchedule->end_time);
+
+        if ($appointmentTime->lt($startTime) || $appointmentTime->gte($endTime)) {
+            return response()->json(['message' => 'La hora seleccionada no está dentro del horario del barbero'], 400);
+        }
+
+        $existingAppointment = Appointment::where('barber_id', $validatedData['barber_id'])
+            ->whereDate('date', $validatedData['date'])
+            ->where('hour', $validatedData['hour'])
+            ->exists();
+
+        if ($existingAppointment) {
+            return response()->json(['message' => 'Ya hay una cita programada en la misma hora'], 400);
+        }
 
         $appointment = Appointment::create($validatedData);
         return response()->json($appointment, 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function show($barberId)
     {
-        $appointment = Appointment::findOrFail($id);
-        return response()->json($appointment);
+        $dayOfWeek = Carbon::now()->format('l');
+        $barberSchedule = BarberSchedule::where('barber_id', $barberId)
+            ->where('day_of_week', $dayOfWeek)
+            ->first();
+
+        if (!$barberSchedule) {
+            return response()->json(['message' => 'No hay horario disponible para el barbero hoy'], 400);
+        }
+
+        $startDateTime = Carbon::now()->startOfDay()->addHours($barberSchedule->start_time);
+        $endDateTime = Carbon::now()->startOfDay()->addHours($barberSchedule->end_time);
+
+        $existingAppointments = Appointment::where('barber_id', $barberId)
+            ->whereDate('date', Carbon::today())
+            ->pluck('hour');
+
+        $availableHours = [];
+        for ($time = $startDateTime; $time->lt($endDateTime); $time->addHour()) {
+            $hour = $time->format('H:i');
+            $availableHours[$hour] = !$existingAppointments->contains($hour);
+        }
+
+        return response()->json(['available_hours' => $availableHours]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, string $id)
     {
         $appointment = Appointment::findOrFail($id);
@@ -54,7 +132,6 @@ class AppointmentController extends Controller
         $validatedData = $request->validate([
             'barber_id' => 'exists:users,id',
             'client_id' => 'exists:users,id',
-            'services_id' => 'exists:services,id',
             'date' => 'date',
             'state' => 'in:programada,confirmada,completada,cancelada',
             'notes' => 'nullable|string',
@@ -64,9 +141,6 @@ class AppointmentController extends Controller
         return response()->json($appointment);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $id)
     {
         Appointment::findOrFail($id)->delete();

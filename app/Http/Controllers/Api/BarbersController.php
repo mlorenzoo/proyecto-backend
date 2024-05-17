@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Barber;
+use App\Models\BarberSchedule;
 
 class BarbersController extends Controller
 {
@@ -88,5 +89,40 @@ class BarbersController extends Controller
 
         // Devolver una respuesta JSON indicando que el barbero fue eliminado
         return response()->json(['message' => 'Barber deleted successfully']);
+    }
+
+    public function getSchedules(string $id)
+    {
+        // Buscar el barbero por su ID
+        $barber = Barber::findOrFail($id);
+
+        // Obtener los horarios del barbero
+        $schedules = BarberSchedule::where('barber_id', $barber->id)->get();
+
+        // Devolver una respuesta JSON con los horarios del barbero
+        return response()->json(['success' => true, 'data' => $schedules]);
+    }
+
+    /**
+     * Update the specified schedule of the specified barber.
+     */
+    public function updateSchedule(Request $request, string $barberId, string $scheduleId)
+    {
+        // Buscar el horario del barbero por su ID
+        $schedule = BarberSchedule::where('barber_id', $barberId)->findOrFail($scheduleId);
+
+        // Validar los datos de la solicitud
+        $request->validate([
+            'day_of_week' => 'integer|between:1,7', // Validar que el día de la semana esté entre 1 y 7 (Lunes a Domingo)
+            'start_time' => 'date_format:H:i:s', // Validar el formato de la hora de inicio
+            'end_time' => 'date_format:H:i:s', // Validar el formato de la hora de fin
+            'month' => 'string', // Puedes agregar más validaciones según tus necesidades
+        ]);
+
+        // Actualizar el horario del barbero con los datos proporcionados
+        $schedule->update($request->all());
+
+        // Devolver una respuesta JSON con el horario actualizado y éxito true
+        return response()->json(['success' => true, 'data' => $schedule]);
     }
 }
