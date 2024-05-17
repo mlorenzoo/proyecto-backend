@@ -21,6 +21,8 @@ return new class extends Migration
             $table->enum('state', ['programada', 'confirmada', 'completada', 'cancelada']);
             $table->text('notes')->nullable();
             $table->timestamps();
+
+            $table->unique(['barber_id', 'date', 'hour']);
         });
     }
 
