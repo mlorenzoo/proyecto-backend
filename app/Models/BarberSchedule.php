@@ -13,8 +13,14 @@ class BarberSchedule extends Model
     /**
      * Get the barber that owns the schedule.
      */
-    public function barber()
+    public function barberProfile()
     {
-        return $this->belongsTo(Barber::class);
+        return $this->belongsTo(Barber::class, 'barber_id');
+    }
+    
+    public function scopeForBarberAndDay($query, $barberId, $dayOfWeek)
+    {
+        return $query->where('barber_id', $barberId)
+                    ->where('day_of_week', $dayOfWeek);
     }
 }

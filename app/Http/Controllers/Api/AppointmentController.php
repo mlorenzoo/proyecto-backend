@@ -28,9 +28,7 @@ class AppointmentController extends Controller
         $dayOfWeek = $date->format('l');
         Log::info($dayOfWeek);
     
-        $barberSchedule = BarberSchedule::where('barber_id', $barberId)
-            ->where('day_of_week', $dayOfWeek)
-            ->first();
+        $barberSchedule = BarberSchedule::forBarberAndDay($barberId, $dayOfWeek)->first();
     
         Log::info('Barber Schedule: ' . $barberSchedule);
     

@@ -192,4 +192,18 @@ class UsersController extends Controller
 
         return response()->json(['success' => true, 'message' => 'Profile picture updated successfully']);
     }
+
+    private function createDefaultBarberSchedules($barberId)
+    {
+        $daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+
+        foreach ($daysOfWeek as $dayOfWeek) {
+            BarberSchedule::create([
+                'barber_id' => $barberId,
+                'day_of_week' => $dayOfWeek,
+                'start_time' => '09:00:00',
+                'end_time' => '17:00:00',
+            ]);
+        }
+    }
 }
