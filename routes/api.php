@@ -41,6 +41,10 @@ Route::apiResource('clients', ClientsController::class);
 Route::apiResource('userclient', UserClientController::class);
 Route::get('/barbers/{id}/schedules', [BarbersController::class, 'getSchedules']);
 Route::get('/barbers/{barberId}/appointments', [AppointmentController::class, 'index']);
+Route::post('/appointments', [AppointmentController::class, 'store']);
+Route::get('/appointments/{clientId}', [AppointmentController::class, 'getAppointmentsByClientId']);
+Route::get('/appointments/barber/{barberId}', [AppointmentController::class, 'getAppointmentsByBarberId']);
+Route::put('/appointments/{id}', [AppointmentController::class, 'update']);
 
 // TokenController
 Route::middleware('auth:sanctum')->get('/user', [TokenController::class, 'user']);

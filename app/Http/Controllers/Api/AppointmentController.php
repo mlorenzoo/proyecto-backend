@@ -30,9 +30,6 @@ class AppointmentController extends Controller
     
         $barberSchedule = BarberSchedule::forBarberAndDay($barberId, $dayOfWeek)->first();
     
-        Log::info('Barber Schedule: ' . $barberSchedule);
-        Log::info('Barber Id: ' . $barberId);
-        Log::info('Day of week: ' . $dayOfWeek);
     
         if (!$barberSchedule) {
             return response()->json(['message' => 'No schedule available for the barber on this date'], 400);
@@ -61,7 +58,7 @@ class AppointmentController extends Controller
             'barber_id' => 'required|exists:users,id',
             'client_id' => 'required|exists:users,id',
             'date' => 'required|date',
-            'hour' => 'required|regex:/^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/',
+            'hour' => 'required',
             'state' => 'required|in:programada,confirmada,completada,cancelada',
             'notes' => 'nullable|string',
         ]);
@@ -74,7 +71,7 @@ class AppointmentController extends Controller
             ->first();
 
         if (!$barberSchedule) {
-            return response()->json(['message' => 'No hay horario disponible para el barbero en esta fecha'], 400);
+            return response()->json(['success' => false, 'message' => 'No hay horario disponible para el barbero en esta fecha'], 400);
         }
 
         $appointmentTime = Carbon::parse($validatedData['date'] . ' ' . $validatedData['hour']);
@@ -82,7 +79,7 @@ class AppointmentController extends Controller
         $endTime = Carbon::parse($validatedData['date'] . ' ' . $barberSchedule->end_time);
 
         if ($appointmentTime->lt($startTime) || $appointmentTime->gte($endTime)) {
-            return response()->json(['message' => 'La hora seleccionada no está dentro del horario del barbero'], 400);
+            return response()->json(['success' => false, 'message' => 'La hora seleccionada no está dentro del horario del barbero'], 400);
         }
 
         $existingAppointment = Appointment::where('barber_id', $validatedData['barber_id'])
@@ -91,11 +88,11 @@ class AppointmentController extends Controller
             ->exists();
 
         if ($existingAppointment) {
-            return response()->json(['message' => 'Ya hay una cita programada en la misma hora'], 400);
+            return response()->json(['success' => false, 'message' => 'Ya hay una cita programada en la misma hora'], 400);
         }
 
         $appointment = Appointment::create($validatedData);
-        return response()->json($appointment, 201);
+        return response()->json(['success' => true, 'data' => $appointment], 201);
     }
 
     public function show($barberId)
@@ -140,10 +137,37 @@ class AppointmentController extends Controller
         $appointment->update($validatedData);
         return response()->json($appointment);
     }
+    public function getAppointmentsByClientId($clientId)
+    {
+        // Busca todos los appointments del cliente especificado
+        $appointments = Appointment::where('client_id', $clientId)->get();
+        
+        // Verifica si se encontraron appointments para el cliente
+        if ($appointments->isEmpty()) {
+            return response()->json(['success' => false, 'message' => 'No appointments found for the specified client'], 404);
+        }
+        
+        // Retorna los appointments encontrados
+        return response()->json(['success' => true, 'appointments' => $appointments]);
+    }
 
     public function destroy(string $id)
     {
         Appointment::findOrFail($id)->delete();
         return response()->json(['message' => 'Appointment deleted successfully']);
+    }
+
+    public function getAppointmentsByBarberId($barberId)
+    {
+        // Busca todos los appointments del barbero especificado
+        $appointments = Appointment::where('barber_id', $barberId)->get();
+        
+        // Verifica si se encontraron appointments para el barbero
+        if ($appointments->isEmpty()) {
+            return response()->json(['success' => false, 'message' => 'No appointments found for the specified barber'], 404);
+        }
+        
+        // Retorna los appointments encontrados
+        return response()->json(['success' => true, 'appointments' => $appointments]);
     }
 }
