@@ -45,6 +45,8 @@ Route::post('/appointments', [AppointmentController::class, 'store']);
 Route::get('/appointments/{clientId}', [AppointmentController::class, 'getAppointmentsByClientId']);
 Route::get('/appointments/barber/{barberId}', [AppointmentController::class, 'getAppointmentsByBarberId']);
 Route::put('/appointments/{id}', [AppointmentController::class, 'update']);
+Route::get('/clients/{ClientId}', [ClientsController::class, 'show']);
+
 
 // TokenController
 Route::middleware('auth:sanctum')->get('/user', [TokenController::class, 'user']);
